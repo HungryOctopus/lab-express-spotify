@@ -1,0 +1,14 @@
+<body>
+  <div>
+    {{#each tracks}}
+      <figure>
+        <figcaption><p>{{name}}</p></figcaption>
+        <audio controls src={{preview_url}}>
+          Your browser does not support the
+          <code>audio</code>
+          element.
+        </audio>
+      </figure>
+    {{/each}}
+  </div>
+</body>

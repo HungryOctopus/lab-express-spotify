@@ -1,4 +1,5 @@
-require('dotenv').config();
+const dotenv = require('dotenv');
+dotenv.config();
 
 const express = require('express');
 const hbs = require('hbs');
@@ -8,7 +9,7 @@ const path = require('path');
 const SpotifyWebApi = require('spotify-web-api-node');
 
 const app = express();
-
+hbs.registerPartials(__dirname + '/views/partials');
 // Express needs to know which templating engine to use
 // We need to set the option 'view engine' to the name of the package
 // that will render our views
@@ -34,19 +35,50 @@ spotifyApi
 
 // Our routes go here:
 
-app.get('/', (request, response) => {
-  response.render('home.hbs');
+app.get('/', (req, res, next) => {
+  res.render('index');
 });
 
-app.get('/artist-search', (req, res, next) => {
+app.get('/artist-search-results', (req, res) => {
+  const keyword = req.query.keyword;
   spotifyApi
-    .searchArtists('input-search-term')
+    .searchArtists(keyword)
     .then((data) => {
-      console.log('The received data from the API: ', data.body);
-      res.render('index', data); // ----> 'HERE WHAT WE WANT TO DO AFTER RECEIVING THE DATA FROM THE API'
+      console.log('The received data from the API: ', data.body.artists.items);
+      res.render('artist-search-results', {
+        artists: data.body.artists.items
+      });
     })
     .catch((err) =>
       console.log('The error while searching artists occurred: ', err)
+    );
+});
+
+app.get('/albums/:artistId', (req, res, next) => {
+  const artistId = req.params.artistId;
+  spotifyApi
+    .getArtistAlbums(artistId)
+    .then((data) => {
+      console.log('Album information', data.body.items);
+      res.render('albums', {
+        albums: data.body.items
+      });
+    })
+    .catch((err) => console.log('The following error occured: ', err));
+});
+
+app.get('/viewtracks/:albumId', (req, res, next) => {
+  const albumId = req.params.albumId;
+  spotifyApi
+    .getAlbumTracks(albumId)
+    .then((data) => {
+      console.log('Album tracks', data.body.items);
+      res.render('viewtracks', {
+        tracks: data.body.items
+      });
+    })
+    .catch((err) =>
+      console.log('The error while searching tracks occurred: ', err)
     );
 });
 
